@@ -1,0 +1,1053 @@
+openapi: 3.0.1
+info:
+  title: SMS Messaging Interface
+  description: |
+    SMS messaging enables applications to send and receive text messages to one or more recipients in a single request. Delivery is confirmed by retrieving a delivery status or through subscription to a webhook notification. This API specification is based on the GMSA OneAPI framework for SMS.
+  version: 0.0.2-15Q3
+servers:
+  - url: https://api-sandbox.vf-dmp.engineering.vodafone.com/omn/api/
+    description: "Sandbox"
+  - url: https://api.vf-dmp.engineering.vodafone.com/omn/api/
+    description: "Production"
+tags:
+  - name: Sending SMS
+    description: | 
+      **Web Application Originated SMS Messaging**
+      
+      Send SMS messages, Query SMS message status and Subscribe to receive delivery notifications for submitted SMS messages
+  - name: Receiving SMS
+    description: |
+      **Web Application Terminated SMS Messaging**
+      
+      Retreive SMS messages or Subscribe to receive SMS messages
+paths:
+  /smsmessaging/v1/outbound/{senderAddress}/requests:
+    post:
+      tags:
+        - Sending SMS
+      summary: Send an SMS message to one or more recipients
+      description: |
+        Send an SMS message to one or more recipients.
+
+        A recipient is addressed by their unique MSISDN.
+
+        The sending web application is identified by their provider assigned
+        senderAddress (short code). 
+      operationId: SendMessage
+      parameters:
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutboundSMSMessageReqCall'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboundSMSMessageRspCall'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Authentication Failure
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/outbound/{senderAddress}/requests:
+    post:
+      tags:
+        - Sending SMS
+      summary: Send an SMS message to one or more recipients
+      description: |
+        Send an SMS message to one or more recipients.
+
+        A recipient is addressed by their unique MSISDN.
+
+        The sending web application is identified by their assigned customerID. 
+      operationId: SendMessageIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200        
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutboundSMSMessageReqCall'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutboundSMSMessageRspCall'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: string
+        '401':
+          description: Authentication Failure
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /smsmessaging/v1/outbound/{senderAddress}/requests/{requestID}/deliveryInfos:
+    get:
+      tags:
+        - Sending SMS
+      summary: Query an SMS message previously submitted to one or more recipients
+      description: |
+        Query the delivery status of an SMS message previously submitted to one
+        or more recipients identified by requestID.
+
+        The delivery status response is an deliveryInfoList object containing
+        the delivery information for each recipient.
+
+        address for which a message was originally submitted to, in a
+        deliveryInfo array.
+
+        The deliveryStatus value may be one of:
+
+        - DeliveredToTerminal: successfully delivered to recipient terminal
+
+        - DeliveryUncertain: delivery status unknown
+
+        - DeliveryImpossible: unsuccessful delivery, the message could not be
+        delivered before it expired
+
+        - MessageWaiting: the message is queued for delivery. This is a
+        temporary state, pending transition to one of the other states
+
+        - DeliveredToNetwork: successful delivery to the network enabler
+        responsible for routing the SMS
+        
+        The sending web application is identified by their provider assigned
+        senderAddress (short code).
+      operationId: QueryMessageStatus
+      parameters:
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: requestID
+          description: 'Copied from a response to send message request (resourceURL parameter or Location header field).'
+          example: request200
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryInfoListRspCall'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/outbound/{senderAddress}/requests/{requestID}/deliveryInfos:
+    get:
+      tags:
+        - Sending SMS
+      summary: Query an SMS message previously submitted to one or more recipients
+      description: |
+        Query the delivery status of an SMS message previously submitted to one
+        or more recipients identified by requestID
+
+        The delivery status response is an deliveryInfoList object containing
+        the delivery information for each recipient 
+
+        address for which a message was originally submitted to, in a
+        deliveryInfo array.
+
+        The deliveryStatus value may be one of:
+
+        - DeliveredToTerminal: successfully delivered to recipient terminal
+
+        - DeliveryUncertain: delivery status unknown
+
+        - DeliveryImpossible: unsuccessful delivery, the message could not be
+        delivered before it expired
+
+        - MessageWaiting: the message is queued for delivery. This is a
+        temporary state, pending transition to one of the other states
+
+        - DeliveredToNetwork: successful delivery to the network enabler
+        responsible for routing the SMS
+        
+        The sending web application is identified by their assigned customerID.
+      operationId: QueryMessageStatusIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: requestID
+          description: 'Copied from a response to send message request (resourceURL parameter or Location header field).'
+          example: request200
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryInfoListRspCall'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /smsmessaging/v1/outbound/{senderAddress}/subscriptions:
+    post:
+      tags:
+        - Sending SMS
+      summary: Subscribe to receive delivery status notifications for previously        submitted SMS messages
+      description: |
+        Subscribe to receive delivery status notifications for all previously
+        submitted SMS messages.
+        
+        The sending web application is identified by their provider assigned
+        senderAddress (short code).
+      operationId: SubscribeDN
+      parameters:
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliverySubscriptionReqCall'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliverySubscriptionRspCall'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/outbound/{senderAddress}/subscriptions:
+    post:
+      tags:
+        - Sending SMS
+      summary: Subscribe to receive delivery status notifications for previously        submitted SMS messages
+      description: |
+        Subscribe to receive delivery status notifications for all previously
+        submitted SMS messages.
+        
+        The sending web application is identified by their assigned customerID.
+      operationId: SubscribeDNIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliverySubscriptionReqCall'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliverySubscriptionRspCall'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /smsmessaging/v1/outbound/{senderAddress}/subscriptions/{subscriptionID}:
+    delete:
+      tags:
+        - Sending SMS
+      summary: Unsubscribe from receiving delivery status notifications for previously
+        submitted SMS messages
+      description: |
+        Unsubscribe from receiving delivery status notifications for all
+        previously submitted SMS messages.
+        
+        The sending web application is identified by their provider assigned
+        senderAddress (short code).
+      operationId: UnsubscribeDN
+      parameters:
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: subscriptionID
+          description: 'Value from the response when subscription to SMS delivery notification was created (resourceURL parameter or Location header field).'
+          example: subscription200
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/outbound/{senderAddress}/subscriptions/{subscriptionID}:
+    delete:
+      tags:
+        - Sending SMS
+      summary: Unsubscribe from receiving delivery status notifications for previously
+        submitted SMS messages
+      description: |
+        Unsubscribe from receiving delivery status notifications for all
+        previously submitted SMS messages.
+        
+        The sending web application is identified by their assigned customerID.
+      operationId: UnsubscribeDNIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: senderAddress
+          description: 'The sender address that will appear on the device with the message. This can be a shortcode, alphanumeric or long number (MSISDN).'
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: subscriptionID
+          description: 'Value from the response when subscription to SMS delivery notification was created (resourceURL parameter or Location header field).'
+          example: subscription200
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /smsmessaging/v1/inbound/registrations/{registrationID}/messages:
+    get:
+      tags:
+        - Receiving SMS
+      summary: Retrieve SMS messages addressed to your web application
+      description: |
+        Retrieve SMS messages addressed to your web application (identified by
+        registrationID).
+
+        This operation provides a means for your web application to poll the
+        messaging platform for SMS messages.
+        
+        The sending web application is identified by their provider assigned
+        senderAddress (short code).
+      operationId: RetrieveMessages
+      parameters:
+        - name: registrationID
+          description: 'The application address, typically a short-code or virtual MSISDN registered with the mobile operator. '
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: maxBatchSize
+          description: 'The maximum number of messages to retrieve in single request.'
+          example: 2
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundSMSMessageListRspCall'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/inbound/registrations/{registrationID}/messages:
+    get:
+      tags:
+        - Receiving SMS
+      summary: Retrieve SMS messages addressed to your web application
+      description: |
+        Retrieve SMS messages addressed to your web application (identified by
+        registrationID).
+
+        This operation provides a means for your web application to poll the
+        messaging platform for SMS messages.
+        
+        The sending web application is identified by their assigned customerID.
+      operationId: RetrieveMessagesIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: registrationID
+          description: 'The application address, typically a short-code or virtual MSISDN registered with the mobile operator. '
+          example: tel:+44202020202
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: maxBatchSize
+          description: 'The maximum number of messages to retrieve in single request.'
+          example: 2
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundSMSMessageListRspCall'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /smsmessaging/v1/inbound/subscriptions:
+    post:
+      tags:
+        - Receiving SMS
+      summary: Subscribe to receive SMS messages addressed to your web application
+      description: |
+        Subscribe to receive SMS messages addressed to your web application.
+
+        Once subscribed, your web application will receive SMS messages when
+        processed by your provider messaging platform.
+        
+        The sending web application is identified by their provider assigned
+        senderAddress (short code).
+      operationId: SubscribeMessages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionReqCall'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionRspCall'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/inbound/subscriptions:
+    post:
+      tags:
+        - Receiving SMS
+      summary: Subscribe to receive SMS messages addressed to your web application
+      description: |
+        Subscribe to receive SMS messages addressed to your web application.
+
+        Once subscribed, your web application will receive SMS messages when
+        processed by your provider messaging platform.
+        
+        The sending web application is identified by their assigned customerID.
+      operationId: SubscribeMessagesIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionReqCall'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionRspCall'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /smsmessaging/v1/inbound/subscriptions/{subscriptionID}:
+    delete:
+      tags:
+        - Receiving SMS
+      summary: Unsubscribe from receiving SMS messages addressed to your web
+        application
+      description: |
+        Unsubscribe from receiving SMS messages addressed to your web
+        application.
+
+        Once unsubscribed, your web application will no longer receive SMS
+        messages when processed by your provider messaging platform.
+
+        SMS messages that have not been retrieved will expire once their
+        validity period has been reached.
+        
+        The sending web application is identified by their provider assigned
+        senderAddress (short code).
+      operationId: UnsubscribeMessages
+      parameters:
+        - name: subscriptionID
+          description: 'Value from the response when subscription to SMS delivery notification was created (resourceURL parameter or Location header field).'
+          example: subscription200
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+  /{customerID}/smsmessaging/v1/inbound/subscriptions/{subscriptionID}:
+    delete:
+      tags:
+        - Receiving SMS
+      summary: Unsubscribe from receiving SMS messages addressed to your web
+        application
+      description: |
+        Unsubscribe from receiving SMS messages addressed to your web
+        application.
+
+        Once unsubscribed, your web application will no longer receive SMS
+        messages when processed by your provider messaging platform.
+
+        SMS messages that have not been retrieved will expire once their
+        validity period has been reached.
+        
+        The sending web application is identified by their assigned customerID.
+      operationId: UnsubscribeMessagesIcr
+      parameters:
+        - name: customerID
+          description: 'The request submission by an application with assigned customer ID.'
+          example: customer200
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: subscriptionID
+          description: 'Value from the response when subscription to SMS delivery notification was created (resourceURL parameter or Location header field).'
+          example: subscription200
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: string
+        '405':
+          description: Method Not Allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    CallbackReference:
+      type: object
+      properties:
+        callbackData:
+          type: string
+          description: |
+            Parameter is passed back in notification, can be used to identify the message the receipt relates to.
+            Is only valid if notifications are required – sent with the notifyURL parameter within the receiptRequest element.
+          example: some data useful to the requestor
+        notifyURL:
+          type: string
+          description: |
+            The URL to which a notification of delivery is sent.
+            If notifications are required the notifyURL parameter has to be set within the receiptRequest element
+          example: http://application-url/notify
+    OutboundSMSMessageReq:
+      type: object
+      properties:
+        address:
+          type: array
+          items:
+            type: string
+            description: |
+              Recipient addresses, at least one address must be provided. Parameter has to begin with the 'tel:' protocol
+              identifier followed by the country code (preceded by the plus sign) and recipients MSISDN
+            example: tel:+16309700001
+        senderAddress:
+          type: string
+          description: This is a provider assigned senderAddress (short code). It is the address to whom a responding SMS may be sent
+          example: '12345'
+        outboundSMSTextMessage:
+          $ref: '#/components/schemas/OutboundSMSTextMessage'
+        clientCorrelator:
+          type: string
+          description: Uniquely identifies the SMS submit request
+          example: '6587329'
+        receiptRequest:
+          $ref: '#/components/schemas/CallbackReference'
+        senderName:
+          type: string
+          description: The url-escaped name of the sender to appear on the receiving terminal
+          example: '12345'
+    OutboundSMSMessageRsp:
+      type: object
+      properties:
+        address:
+          type: array
+          items:
+            type: string
+            description: |
+              Recipient addresses, at least one address must be provided. Parameter has to begin with the 'tel:' protocol
+              identifier followed by the country code (preceded by the plus sign) and recipients MSISDN
+            example: tel:+16309700001           
+        deliveryInfoList:
+          $ref: '#/components/schemas/DeliveryInfoListRsp'
+        senderAddress:
+          type: string
+          description: This is a provider assigned senderAddress (short code). It is the address to whom a responding SMS may be sent
+          example: '12345'         
+        outboundSMSTextMessage:
+          $ref: '#/components/schemas/OutboundSMSTextMessage'
+        clientCorrelator:
+          type: string
+          description: Uniquely identifies the SMS submit request
+          example: '6587329'        
+        receiptRequest:
+          $ref: '#/components/schemas/CallbackReference'
+        senderName:
+          type: string
+          description: The url-escaped name of the sender to appear on the receiving terminal
+          example: '12345'
+        resourceURL:
+          type: string
+          description: URI of the created message including the customerID, senderAddress and requestID
+    OutboundSMSTextMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          description: SMS message text
+          example: Hello World!
+    DeliveryInfo:
+      type: object
+      properties:
+        address:
+          type: string
+          description: |
+            Recipient addresses, at least one address must be provided. Parameter has to begin with the 'tel:' protocol
+            identifier followed by the country code (preceded by the plus sign) and recipients MSISDN
+          example: tel:+16309700001
+        deliveryStatus:
+          type: string
+          description: |
+            The deliveryStatus value may be one of:
+            DeliveredToTerminal: successfully delivered to recipient terminal
+            DeliveryUncertain: delivery status unknown
+            DeliveryImpossible: unsuccessful delivery, the message could not be delivered before it expired
+            MessageWaiting: the message is queued for delivery. This is a temporary state, pending transition to one of the other states
+            DeliveredToNetwork: successful delivery to the network enabler responsible for routing the SMS
+          example: MessageWaiting
+    DeliveryInfoListRsp:
+      type: object
+      properties:
+        deliveryInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryInfo'
+        resourceURL:
+          type: string
+          description: reference to this request
+    DeliveryReceiptSubscriptionReq:
+      type: object
+      properties:
+        callbackReference:
+          $ref: '#/components/schemas/CallbackReference'
+        filterCriteria:
+          type: string
+          description: |
+            service provider specific filter criteria that are used in routing the message to your application.
+            The matching shall be case-insensitive.
+    DeliveryReceiptSubscriptionRsp:
+      type: object
+      properties:
+        callbackReference:
+          $ref: '#/components/schemas/CallbackReference'
+        filterCriteria:
+          type: string
+          description: |
+            Service provider specific filter criteria that are used in routing the message to your application.
+            The matching shall be case-insensitive.
+        resourceURL:
+          type: string
+          description: Reference to this request with subscription id
+    InboundSMSMessage:
+      type: object
+      properties:
+        dateTime:
+          type: string
+          format: date-time
+          description: The date time the message was received
+          example: 2015-01-05T12:00:00
+        destinationAddress:
+          type: string
+          description: The registered application address, typically a short-code or virtual MSISDN registered with the service provider
+          example: tel:3456
+        messageId:
+          type: string
+          description: A service provider generated message identifier
+          example: msg1
+        message:
+          type: string
+          description: The SMS message text
+          example: Hello World
+        resourceURL:
+          type: string
+          description: reference to the message
+        senderAddress:
+          type: string
+          description: The MSISDN of the sender
+          example: tel:+447825789123
+    InboundSMSMessageListRsp:
+      type: object
+      properties:
+        inboundSMSMessage:
+          type: array
+          items:
+            $ref: '#/components/schemas/InboundSMSMessage'
+        numberOfMessagesInThisBatch:
+          type: string
+          description: the size or number of messages in this array
+          example: '2'
+        resourceURL:
+          type: string
+          description: Reference to this request
+        totalNumberOfPendingMessages:
+          type: string
+          description: The number of pending messages awaiting retrieval
+          example: 3
+    SubscriptionReq:
+      type: object
+      properties:
+        callbackReference:
+          $ref: '#/components/schemas/CallbackReference'
+        criteria:
+          type: string
+          description: |
+            Case-insensitve text to match against the first word of the message, ignoring any leading whitespace.
+            This allows to filter messages among various subscriptions, each of which can register their own different criteria
+          example: Vote
+        destinationAddress:
+          type: string
+          description: The application address, typically a short-code or virtual MSISDN registered with the service provider
+          example: tel:3456
+        notificationFormat:
+          type: string
+          description: |
+            Content type that notifications will be sent in, the default format is JSON
+            XML or JSON can be specified
+          example: "JSON"
+        clientCorrelator:
+          type: string
+          description: Uniquely identifies the subscription request
+          example: 12345
+    SubscriptionRsp:
+      type: object
+      properties:
+        callbackReference:
+          $ref: '#/components/schemas/CallbackReference'
+        criteria:
+          type: string
+          description: |
+            Case-insensitve text to match against the first word of the message, ignoring any leading whitespace.
+            This allows to filter messages among various subscriptions, each of which can register their own different criteria
+          example: Vote
+        destinationAddress:
+          type: string
+          description: The application address, typically a short-code or virtual MSISDN registered with the service provider
+          example: tel:3456
+        notificationFormat:
+          type: string
+          description: |
+            Content type that notifications will be sent in, the default format is JSON
+            XML or JSON can be specified
+          example: "JSON"
+        clientCorrelator:
+          type: string
+          description: Uniquely identifies the subscription request
+          example: 12345
+        resourceURL:
+          type: string
+          description: Reference to this request with subscription id
+    OutboundSMSMessageReqCall:
+      type: object
+      properties:
+        outboundSMSMessageRequest:
+          $ref: '#/components/schemas/OutboundSMSMessageReq'
+    OutboundSMSMessageRspCall:
+      type: object
+      properties:
+        outboundSMSMessageRequest:
+          $ref: '#/components/schemas/OutboundSMSMessageRsp'
+    DeliveryInfoListRspCall:
+      type: object
+      properties:
+        deliveryInfoList:
+          $ref: '#/components/schemas/DeliveryInfoListRsp'
+    DeliverySubscriptionReqCall:
+      type: object
+      properties:
+        deliveryReceiptSubscription:
+          $ref: '#/components/schemas/DeliveryReceiptSubscriptionReq'
+    DeliverySubscriptionRspCall:
+      type: object
+      properties:
+        deliveryReceiptSubscription:
+          $ref: '#/components/schemas/DeliveryReceiptSubscriptionRsp'
+    InboundSMSMessageListRspCall:
+      type: object
+      properties:
+        inboundSMSMessageList:
+          $ref: '#/components/schemas/InboundSMSMessageListRsp'
+    SubscriptionReqCall:
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/SubscriptionReq'
+    SubscriptionRspCall:
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/SubscriptionRsp'

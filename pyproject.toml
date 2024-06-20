@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "open_gateway_onboarding_and_ordering_api"
-version = "5.0.0"
+name = "sms_messaging_interface"
+version = "0.0.2-15Q3"
 description = ""
 readme = "README.md"
 authors = []
-packages = [{ include = "open_gateway_onboarding_and_ordering_api", from = "src" }]
+packages = [{ include = "sms_messaging_interface", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
